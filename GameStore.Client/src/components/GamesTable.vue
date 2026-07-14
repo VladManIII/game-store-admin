@@ -1,20 +1,50 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import Button from "./Button.vue";
-import { gameStoreGateway, type Game } from "../api/GameStoreGateway";
+import GameDialog from "./GameDialog.vue";
+import ConformationDialog from "./ConformationDialog.vue";
+import { gamesGateway, type Game } from "../api/GamesGateway.js";
 
 const games = ref<Game[]>([]);
 const loading = ref(true);
-const error = ref<string | null>(null);
+const dialogRef = ref<InstanceType<typeof GameDialog> | null>(null);
+const conformationDialogRef = ref<InstanceType<
+  typeof ConformationDialog
+> | null>(null);
 
 async function loadGames() {
   loading.value = true;
-  error.value = null;
 
   try {
-    games.value = await gameStoreGateway.getGames();
+    games.value = await gamesGateway.getGames();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : String(err);
+    console.log(err instanceof Error ? err.message : String(err));
+  } finally {
+    loading.value = false;
+  }
+}
+
+function addGame() {
+  dialogRef.value?.open();
+}
+
+function editGame(gameId: number) {
+  dialogRef.value?.open(gameId);
+}
+
+async function deleteGame(game: Game) {
+  const confirmed = await conformationDialogRef.value?.open(
+    `Are you sure you want to delete "${game.name}"?`,
+  );
+  if (!confirmed) return;
+
+  loading.value = true;
+
+  try {
+    await gamesGateway.deleteGame(game.id);
+    await loadGames();
+  } catch (err) {
+    console.log(err instanceof Error ? err.message : String(err));
   } finally {
     loading.value = false;
   }
@@ -27,10 +57,13 @@ onMounted(() => {
 
 <template>
   <div class="mb-2 ms-2">
-    <Button variant="primary" :disabled="loading" @click="loadGames">
+    <Button variant="primary" :disabled="loading" @click="addGame">
       Add Game +
     </Button>
   </div>
+
+  <GameDialog ref="dialogRef" @saved="loadGames" />
+  <ConformationDialog ref="conformationDialogRef" />
 
   <table class="w-full table-auto border-collapse text-left text-sm">
     <thead>
@@ -59,13 +92,17 @@ onMounted(() => {
           <Button
             variant="secondary"
             :disabled="loading"
-            @click="loadGames"
+            @click="editGame(game.id)"
             class="me-1"
           >
             Edit ✎
           </Button>
 
-          <Button variant="danger" :disabled="loading" @click="loadGames">
+          <Button
+            variant="danger"
+            :disabled="loading"
+            @click="deleteGame(game)"
+          >
             Delete 🗑
           </Button>
         </td>
