@@ -1,0 +1,48 @@
+### health check
+
+GET http://localhost:5285/health
+
+### genres list
+
+GET http://localhost:5285/genres
+
+### games list
+
+GET http://localhost:5285/games
+
+### games with specific Id
+
+GET http://localhost:5285/games/1
+
+
+### games with unknown Id
+
+GET http://localhost:5285/games/999
+
+### create a new Game
+
+POST http://localhost:5285/games
+Content-Type: application/json
+
+{
+    "name" : "Devil May Cry",
+    "genreid" : 3,
+    "price" : 59.99,
+    "releaseDate": "2001-08-23"
+}
+
+### update game
+
+PUT  http://localhost:5285/games/1
+Content-Type: application/json
+
+{
+    "name" : "Gothic 1 Classic",
+    "genreId" : 1,
+    "price" : 39.99,
+    "releaseDate": "2005-01-01"
+}
+
+### delete game by id
+
+DELETE   http://localhost:5285/games/3
