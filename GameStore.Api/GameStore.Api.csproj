@@ -7,11 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+    <!-- Pinned to override a transitively-referenced Microsoft.OpenApi 2.0.0, which has a known high-severity vulnerability (GHSA-v5pm-xwqc-g5wc). Stays on 2.x since Microsoft.AspNetCore.OpenApi 10.0.9's source generator isn't compatible with the 3.x API. -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.10.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.16.11" />
+    <!-- Pinned to override a transitively-referenced SQLitePCLRaw 2.1.11, which has a known high-severity vulnerability (GHSA-2m69-gcr7-jv3q). -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
   </ItemGroup>
 
 </Project>

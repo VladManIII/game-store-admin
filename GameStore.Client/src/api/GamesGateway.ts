@@ -1,3 +1,5 @@
+import { httpClient } from "./httpClient.js";
+
 export type Game = {
   id: number;
   name: string;
@@ -24,57 +26,24 @@ export type NewGame = {
 export type UpdateGame = NewGame;
 
 class GamesGateway {
-  private readonly baseUrl = "/api";
-
   async getGames(): Promise<Game[]> {
-    const response = await fetch(`${this.baseUrl}/games`);
-    if (!response.ok) {
-      throw new Error(`API error ${response.status}`);
-    }
-
-    return (await response.json()) as Game[];
+    return httpClient.get<Game[]>("/games");
   }
 
   async getGame(id: number): Promise<GameDetails> {
-    const response = await fetch(`${this.baseUrl}/games/${id}`);
-    if (!response.ok) {
-      throw new Error(`API error ${response.status}`);
-    }
-
-    return (await response.json()) as GameDetails;
+    return httpClient.get<GameDetails>(`/games/${id}`);
   }
 
   async addGame(newGame: NewGame): Promise<GameDetails> {
-    const response = await fetch(`${this.baseUrl}/games`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newGame),
-    });
-    if (!response.ok) {
-      throw new Error(`API error ${response.status}`);
-    }
-
-    return (await response.json()) as GameDetails;
+    return httpClient.post<GameDetails>("/games", newGame);
   }
 
   async updateGame(id: number, updateGame: UpdateGame): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/games/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updateGame),
-    });
-    if (!response.ok) {
-      throw new Error(`API error ${response.status}`);
-    }
+    return httpClient.put<void>(`/games/${id}`, updateGame);
   }
 
   async deleteGame(id: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/games/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      throw new Error(`API error ${response.status}`);
-    }
+    return httpClient.delete<void>(`/games/${id}`);
   }
 }
 
