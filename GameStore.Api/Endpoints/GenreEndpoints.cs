@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Api.Endpoints;
 
-public static class GenreSEndpoints
+public static class GenreEndpoints
 {
     public static void MapGenresEndpoints(this WebApplication app)
     {

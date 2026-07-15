@@ -2,14 +2,17 @@
 import { onMounted, ref } from "vue";
 import Button from "./Button.vue";
 import GameDialog from "./GameDialog.vue";
-import ConformationDialog from "./ConformationDialog.vue";
+import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { gamesGateway, type Game } from "../api/GamesGateway.js";
+import { useToast } from "../composables/useToast.js";
+
+const { addToast } = useToast();
 
 const games = ref<Game[]>([]);
 const loading = ref(true);
 const dialogRef = ref<InstanceType<typeof GameDialog> | null>(null);
-const conformationDialogRef = ref<InstanceType<
-  typeof ConformationDialog
+const confirmationDialogRef = ref<InstanceType<
+  typeof ConfirmationDialog
 > | null>(null);
 
 async function loadGames() {
@@ -18,7 +21,10 @@ async function loadGames() {
   try {
     games.value = await gamesGateway.getGames();
   } catch (err) {
-    console.log(err instanceof Error ? err.message : String(err));
+    addToast(
+      `Failed to load games: ${err instanceof Error ? err.message : String(err)}`,
+      "error",
+    );
   } finally {
     loading.value = false;
   }
@@ -33,9 +39,10 @@ function editGame(gameId: number) {
 }
 
 async function deleteGame(game: Game) {
-  const confirmed = await conformationDialogRef.value?.open(
+  const confirmed = await confirmationDialogRef.value?.open(
     `Are you sure you want to delete "${game.name}"?`,
   );
+
   if (!confirmed) return;
 
   loading.value = true;
@@ -44,7 +51,10 @@ async function deleteGame(game: Game) {
     await gamesGateway.deleteGame(game.id);
     await loadGames();
   } catch (err) {
-    console.log(err instanceof Error ? err.message : String(err));
+    addToast(
+      `Failed to delete "${game.name}": ${err instanceof Error ? err.message : String(err)}`,
+      "error",
+    );
   } finally {
     loading.value = false;
   }
@@ -63,7 +73,7 @@ onMounted(() => {
   </div>
 
   <GameDialog ref="dialogRef" @saved="loadGames" />
-  <ConformationDialog ref="conformationDialogRef" />
+  <ConfirmationDialog ref="confirmationDialogRef" />
 
   <table class="w-full table-auto border-collapse text-left text-sm">
     <thead>
@@ -75,12 +85,14 @@ onMounted(() => {
         <th class="px-4 py-3 font-medium">Actions</th>
       </tr>
     </thead>
+
     <tbody class="divide-y divide-slate-100">
       <tr v-if="!loading && games.length === 0">
-        <td colspan="4" class="px-4 py-6 text-center text-slate-500">
+        <td colspan="5" class="px-4 py-6 text-center text-slate-500">
           No games found.
         </td>
       </tr>
+
       <tr v-for="game in games" :key="game.id" class="hover:bg-slate-200">
         <td class="px-4 py-3 font-medium text-slate-900">{{ game.name }}</td>
         <td class="px-4 py-3 text-slate-700">{{ game.genre }}</td>
