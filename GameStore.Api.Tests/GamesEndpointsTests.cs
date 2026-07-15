@@ -1,17 +1,34 @@
 using System.Net;
 using System.Net.Http.Json;
+using GameStore.Api.Data;
 using GameStore.Api.Dtos;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GameStore.Api.Tests;
 
-public class GamesEndpointsTests : IClassFixture<GameStoreApiFactory>
+public class GamesEndpointsTests : IClassFixture<GameStoreApiFactory>, IAsyncLifetime
 {
+    private readonly GameStoreApiFactory _factory;
     private readonly HttpClient _client;
 
     public GamesEndpointsTests(GameStoreApiFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
+
+    // The class fixture shares one SQLite file across every test for speed, so wipe out
+    // whatever games a previous test left behind before each one runs. Genres stay seeded.
+    public async Task InitializeAsync()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<GameStoreContext>();
+
+        await dbContext.Games.ExecuteDeleteAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     private static NewGameDto ValidGame(string name = "Test Game") =>
         new(name, GameStoreApiFactory.SeededGenreId, 19.99M, new DateOnly(2024, 1, 1));
